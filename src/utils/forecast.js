@@ -10,19 +10,14 @@ const forecast = (latitude, longitude, callback) => {
 
   request({ url: urlWeather, json: true }, (error, { body }) => {
     if (error) {
-      callback(("Unable to connect to weather services!"));
+      callback("Unable to connect to weather services!");
     } else if (body.error) {
-      callback(("Unable to find location"));
+      callback("Unable to find location");
     } else {
       callback(
         undefined,
-        `It is currently ${(body.location.localtime)}, Sky seems - ${(
-          body.current.weather_descriptions[0]
-        )} - ${(
-          body.current.temperature
-        )} °C, and it feels like ${(
-          body.current.feelslike
-        )} °C outside.`
+        `It is currently ${body.location.localtime}, Sky seems - ${body.current.weather_descriptions[0]} - ${body.current.temperature} °C, and it feels like ${body.current.feelslike} °C outside.` +
+          ` Wind speed is: ${body.current.wind_speed} `
       );
     }
   });
