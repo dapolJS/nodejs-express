@@ -4,9 +4,9 @@ const path = require("path");
 const hbs = require("hbs");
 const geocode = require("./utils/geocode");
 const forecast = require("./utils/forecast");
-const request = require("request");
 
 const app = express();
+const port = process.env.PORT || 5555
 
 // Define paths for Express config
 const publicDirectoryPath = path.join(__dirname, "../public");
@@ -57,66 +57,24 @@ app.get("/weather", (req, res) => {
       error: "You must provide an address!",
     });
   }
-  geocode(
-    req.query.address,
-    (error, { latitude, longitude, label } = {}) => {
+  geocode(req.query.address, (error, { latitude, longitude, label } = {}) => {
+    if (error) {
+      return res.send({ error });
+    }
+
+    forecast(latitude, longitude, (error, forecastData) => {
       if (error) {
         return res.send({ error });
       }
 
-      forecast(latitude, longitude, (error, forecastData) => {
-        if (error) {
-          return res.send({ error });
-        }
-
-        res.send({
-          forecast: forecastData,
-          location: label,
-          address: req.query.address,
-        });
+      res.send({
+        forecast: forecastData,
+        location: label,
+        address: req.query.address,
       });
-    }
-  );
+    });
+  });
 });
-
-// app.get("/weatherTest", (req, res) => {
-//   if (req.query.address) {
-//     res.send({
-//       title: "Weather",
-//       location: `${req.query.address}`,
-//       sky: `cloudy`,
-//       name: "Nala the cat",
-//     });
-//   } else {
-//     res.send({
-//       error: "Please provide valid location",
-//     });
-//   }
-// });
-
-// app.get("/weatherTest", (req, res) => {
-//   if (!req.query.address) {
-//     res.send({
-//       error: "Please provide valid address",
-//     });
-//   }
-//   geocode(req.query.address, (error, { latitude, longitude, label } = {}) => {
-//     if (error) {
-//       return res.send({ error: error });
-//     }
-//     forecast(latitude, longitude, (error, forecastData) => {
-//       if (error) {
-//         return res.send({ error: error });
-//       }
-//       res.render("weather", {
-//         title: "Weather",
-//         location: `Location: ${label}`,
-//         sky: `${forecastData}`,
-//         name: "Nala the cat",
-//       });
-//     });
-//   });
-// });
 
 app.get("/products", (req, res) => {
   if (!req.query.search) {
@@ -143,8 +101,8 @@ app.get("*", (req, res) => {
   });
 });
 
-app.listen(5555, () => {
-  console.log(chalk.cyan("Server is up on port 5555!"));
+app.listen(port, () => {
+  console.log(chalk.cyan(`Server is up on port ${port}`));
 });
 
 // launch with nodemon app.js -e js,hbs
